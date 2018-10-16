@@ -10,34 +10,38 @@
     %E- elastic modulus for materials
     clear;
     
-rho_0 =1.2;
-v_0 = 0.001;
+rho_0 =120;
+v_0 = 0.1;
 Time = 10;
 mu = 1000;             % модуль сдвига
 k = 10000;              % к-т объёмного сжатия
 E=9*k*mu/(3*k+mu);   % модуль Юнга
-sqn=8;
+sqn=12;
 l=0.01;
 N=sqn*sqn;
 S=l*l;
 %S=H*L;
 m=rho_0*S/N;
-h=0.5*(m/rho_0)^(1/2);
-dt=0.00001;
+h=(m/rho_0)^(1/2);
+dt=0.0001;
 fr=10;
-    
+  
     %coordinate(particle) initialization
-    x=initialization_x(N,sqn);    
-    v=initialization_v(N,sqn);
+    x=initialization_x(N,sqn,l);    
+    v=initialization_v(N,sqn,v_0);
     
-    rho=rho_0*ones(N);
+    rho=rho_0*ones(1,N);
+    
+    W_cor=zeros(N,N);
+    
+    nabla_W_cor=zeros(2,N,N);%2 dimension(x,y)
     
     F=zeros(2,2,N);
     T=zeros(2,2,N);
     SIG=zeros(2,2,N);
     
-    nabla_W=zeros(2);
-    W_cor=zeros(N);
+    nabla_W=zeros(1,2);
+    
          
     for i = 1:N
       F(1:2,1:2,i)=eye(2);
@@ -49,39 +53,50 @@ fr=10;
     for n = 1:fix(Time/dt)
                 
         L=zeros(2,2,N);
-       
-     %   for i = 1:N
-      %       for j = 1:N
-        %        for beta = 1:2
-                      %nabla_W=Compute_nabla_W(i,j,x,h,beta);
-                      %v=ComputeVelocity(i,j,beta,dt,m,v,rho,SIG,nabla_W0);
-        %        end
-         %    end
+        W_cor=zeros(N,N);
+        nabla_W_cor=zeros(2,N,N);
+        
+        for i = 1:N
+             W_cor=ComputeW_cor(i,N,x,m,h,rho,W_cor);
+        end
+        
+        for i = 1:N
+              nabla_W_cor=Compute_nabla_W_cor(i,N,x,m,h,rho,nabla_W_cor);
+        end
+        
+    %    for i = 1:N
+          %   for j = 1:N
+              %  for beta = 1:2
+                 %     nabla_W=Compute_nabla_W(i,j,x,h,beta);
+                %      v=ComputeVelocity(i,j,beta,dt,m,v,rho,SIG,nabla_W);
+               % end
+             %end
         % end
          
          
          for i = 1:N
              for j = 1:N
                 for beta = 1:2
-                      nabla_W=Compute_nabla_W(i,j,x,h,beta);
-                      L=ComputeL(L,i,j,beta,m,v,rho,nabla_W0_cor);  
+                      nabla_W= nabla_W_cor(beta,i,j);%Compute_nabla_W(i,j,x,h,beta);
+                      L=ComputeL(L,i,j,beta,m,v,rho,nabla_W);  
                 end
              end
          end
          
-        %  for i = 1:N
-         %    for j = 1:N
-         %       for beta = 1:2
-         %            Fdot=ComputeF(F,i,j,beta,m,v,rho,nabla_W0_cor);  
+      %   for i = 1:N
+          %   for j = 1:N
+           %     for beta = 1:2
+            %           nabla_W=Compute_nabla_W(i,j,x,h,beta);
+           %            Fdot=ComputeF(F,i,j,beta,m,v,rho,nabla_W);  
            %    end
           %   end
          % end
-        %  F=F+dt*Fdot;
+      %   F=F+dt*Fdot;
           
          for i = 1:N
             % F(1:2,1:2,i)= F(1:2,1:2,i)+dt* L(1:2,1:2,i)*F(1:2,1:2,i);    
             dtLL = dt* L(1:2,1:2,i);
-            F(1:2,1:2,i)= expm(dtLL)*F(1:2,1:2,i);
+           F(1:2,1:2,i)= expm(dtLL)*F(1:2,1:2,i);
           end
         
         for i = 1:N
@@ -93,8 +108,10 @@ fr=10;
              x(2,i)=x(2,i)+dt*v(2,i);
         end
         
+      
+        
         for i = 1:N
-             rho(i)=ComputeRho(m,W_cor,N);
+             rho(1,i)=ComputeRho(m,N,W_cor,i);
         end
             
         
