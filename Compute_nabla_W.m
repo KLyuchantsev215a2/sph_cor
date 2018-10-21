@@ -12,15 +12,15 @@ function [nabla_W]=Compute_nabla_W(i,j,x,h,beta)
 nabla_W=0;
     
 r=zeros(1,2);
-
+rn=zeros(1,2);
 r(1,1)=x(1,i)-x(1,j);
 r(1,2)=x(2,i)-x(2,j);
 
 q=norm(r,2)/h;
 C=1/(pi*h*h);
-
+rn=r/norm(r,2);
 if (q>0) && (q<1)
-  nabla_W=C*(15 / 7)*(-2*q+3/2*q*q)*(r(1,beta)/(h*norm(r)));
-elseif (q >= 1) && (q <= 2)
-   nabla_W = C*(15 / 7)*(-1/2)*(2 - q)^2*(r(1,beta)/(h*norm(r)));
+  nabla_W=C*(10 / 7)*(-3*q+9/4*q*q)*(rn(1,beta))/h;%Review of Development of the Smooth Particle Hydrodynamics(SPH) MethodRade Vignjevic
+elseif (q >= 1) && (q < 2)
+   nabla_W = C*(10 / 7)*(-3/4)*(2 - q)^2*(rn(1,beta))/h;
 end

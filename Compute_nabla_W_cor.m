@@ -2,51 +2,38 @@ function [nabla_W_cor]=Compute_nabla_W_cor(i,N,x,m,h,rho,nabla_W_cor)
 %kernel of SPH as a function
 % of the coordinate particle i and j
 
+% input:  %i number initial particle
+          %j number calculated particle 
+          %h  blurring radius
+          %x coordinate all particle 
+% output: W = the force of the particle j effect on the initial i
+function [nabla_W]=Compute_nabla_W(i,j,x,h,beta)
+%kernel of SPH as a function
+% of the coordinate particle i and j
+
 % input:  %a number initial particle
           %b namber calculated particle 
           %h  blurring radius
           %x coordinate all particle 
+          %betta normal for the derivative 
 % output: W = the force of the particle j effect on the initial i
-sumW=0;
-gamma=0;
-W_cor_tmp=zeros(2,N,N);
-Li=zeros(2,2,N);
-diad=zeros(2,2);
-for j = 1:N
-    sumW=sumW+m/rho(1,j)*ComputeW(i,j,x,h);
+
+nabla_W=zeros(1, 2);
+    
+r=zeros(1, 2);
+
+r(1,1)=x(1,1,i)-x(1,1,j);
+r(1,2)=x(1,2,i)-x(1,2,j);
+
+q=norm(r,2)/h;
+C=1/(pi*h*h);
+
+if (q>0) && (q<1)
+  nabla_W(1,beta)=C*(15 / 7)*(-2*q+3/2*q*q)*(r(1,beta)/(h*norm(r)));
+elseif (q >= 1) && (q <= 2)
+   nabla_W(1,beta) = C*(15 / 7)*(-1/2)*(2 - q)^2*(r(1,beta)/(h*norm(r)));
 end
 
-for j = 1:N
-    for beta = 1:2
-    gamma=gamma+m/rho(1,j)*Compute_nabla_W(i,j,x,h,beta);
-    end
-end
-
-gamma=gamma/sumW;
-
-for j = 1:N
-    for beta = 1:2
-    W_cor_tmp(beta,i,j)=(Compute_nabla_W(i,j,x,h,beta)-gamma)/sumW;
-    end
-end
-
-for j = 1:N
-    diad(1,1)=W_cor_tmp(1,i,j)*x(1,j);
-    diad(1,2)=W_cor_tmp(1,i,j)*x(2,j);
-    diad(2,1)=W_cor_tmp(2,i,j)*x(1,j);
-    diad(2,2)=W_cor_tmp(2,i,j)*x(2,j);
-    Li(1:2,1:2,j)=Li(1:2,1:2,j)+m/rho(1,j)*diad;
-end
-
-for j = 1:N
-    Li(1:2,1:2,j)=Li(1:2,1:2,j)';
-end
-
-for j = 1:N
-    nabla_W_cor(1:2,i,j)=Li(1:2,1:2,j)'*nabla_W_cor(1:2,i,j);
-end
-
-nabla_W_cor=nabla_W_cor+W_cor_tmp;
 
 
 
