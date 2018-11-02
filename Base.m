@@ -23,7 +23,7 @@ S=l*l;
 %S=H*L;
 m=rho_0*S/N;
 h=1.2*(m/rho_0)^(1/2);
-dt=0.0001;
+dt=0.01;
 fr=10;
   
     %coordinate(particle) initialization
@@ -57,7 +57,7 @@ fr=10;
         L=zeros(2,2,N);  
         W_cor=zeros(N,N);
         nabla_W_cor=zeros(2,N,N);
-        
+        % v=initialization_v(N,sqn,v_0);
         
       
          
@@ -127,15 +127,15 @@ fr=10;
             %nabla_W_cor=Compute_nabla_W_cor(i,N,x,m,h,rho,nabla_W_cor);
        end
         
-     %   for i = 1:N
-          %   for j = 1:N
-          %     for beta = 1:2                 
-           %          v=ComputeVelocity(i,j,beta,dt,m,v,rho,SIG,nabla_W_cor);
-            %    end
-           % end
-         %end
+%         for i = 1:N
+%              for j = 1:N
+%                for beta = 1:2                 
+%                      v=ComputeVelocity(i,j,beta,dt,m,v,rho,SIG,nabla_W_cor);
+%                 end
+%             end
+%          end
          
-          if n==4
+          if n==5
               number=1;
              for i=1:N
                  W_cor=ComputeW_cor(i,N,x,m,h,rho,W_cor);
@@ -165,7 +165,7 @@ fr=10;
          for i = 1:N
              for j = 1:N
                 for beta = 1:2
-                      nabla_W(1:2)=nabla_W_cor(1:2,i,j);%Compute_nabla_W(i,j,x,h,beta);% nabla_W_cor(beta,i,j);
+                      nabla_W(beta)=nabla_W_cor(beta,i,j);%Compute_nabla_W(i,j,x,h,beta);
                       L=ComputeL(L,i,j,beta,m,v,rho,nabla_W);  
                 end
              end
